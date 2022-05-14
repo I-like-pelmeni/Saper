@@ -10,7 +10,6 @@ import random
 import time
 
 
-
 LEVELS = (
     (8, 10),
     (16, 40),
@@ -36,6 +35,18 @@ class Cell(QWidget):
         self.x = x
         self.y = y
 
+    def reset(self):
+        """
+        Сброс клетки
+        """
+        self.is_start = False
+        self.is_mine = False
+        self.adjacent_n = 0
+        self.is_revealed = False
+        self.is_flagged = 0
+        self.is_end = False
+        self.update()
+
     def paintEvent(self, event):
         """
         Событие перерисовки клетки
@@ -49,6 +60,10 @@ class Cell(QWidget):
         pen.setWidth(1)
         p.setPen(pen)
         p.drawRect(r)
+
+        if self.is_revealed:
+            if self.is_mine:
+                p.drawPixmap(r, QPixmap(IMG_BOMB))
 
 
 class MainWindow(QMainWindow):
@@ -68,6 +83,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Сапер')
         self.initUI()
         self.init_map()
+        self.reset_map()
+
         self.setFixedSize(self.sizeHint())
         self.show()
 
@@ -129,6 +146,33 @@ class MainWindow(QMainWindow):
                 w = Cell(x, y)
                 self.grid.addWidget(w, x, y)
 
+    def reset_map(self):
+        self.n_mines = LEVELS[self.level][1]
+        self.mines.setText(f'{self.n_mines:03d}')
+        self.clock.setText('000')
+
+        for _, _, cell in self.get_all_cells():
+            cell.reset()
+
+        mine_positions = self.set_mines()
+
+    def get_all_cells(self):
+        """
+        Возвращает все клетки
+        """
+        for x in range(self.board_size):
+            for y in range(self.board_size):
+                yield (x, y, self.grid.itemAtPosition(x, y).widget())
+
+    def set_mines(self):
+        positions = []
+        while len(positions) < self.n_mines:
+            x = random.randint(0, self.board_size - 1)
+            y = random.randint(0, self.board_size - 1)
+            if (x, y) not in positions:
+                self.grid.itemAtPosition(x, y).widget().is_mine = True
+                positions.append((x, y))
+        return positions
 
 if __name__ == '__main__':
     app = QApplication([])
