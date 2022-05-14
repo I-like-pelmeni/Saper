@@ -10,6 +10,7 @@ import random
 import time
 
 
+
 LEVELS = (
     (8, 10),
     (16, 40),
@@ -25,6 +26,7 @@ class Cell(QWidget):
     """
     Клетка игрового поля
     """
+    expandable = pyqtSignal(int, int)
 
     def __init__(self, x, y, *args, **kwargs):
         """
@@ -74,6 +76,29 @@ class Cell(QWidget):
                 f.setBold(True)
                 p.setFont(f)
                 p.drawText(r, Qt.AlignCenter, str(self.mines_around))
+
+    def click(self):
+        """
+        Обработка клика по клетке
+        """
+        if not self.is_revealed and not self.is_flagged:
+            self.reveal()
+
+    def reveal(self):
+        """
+        Открытие клетки
+        """
+        if not self.is_revealed:
+            self.reveal_self()
+            if self.mines_around == 0:
+                self.expandable.emit(self.x, self.y)
+
+    def reveal_self(self):
+        """
+        Открыть только эту клетку
+        """
+        self.is_revealed = True
+        self.update()
 
 
 class MainWindow(QMainWindow):
@@ -155,6 +180,7 @@ class MainWindow(QMainWindow):
             for y in range(self.board_size):
                 w = Cell(x, y)
                 self.grid.addWidget(w, x, y)
+                w.expandable.connect(self.expand_reveal)
 
     def reset_map(self):
         self.n_mines = LEVELS[self.level][1]
@@ -221,8 +247,27 @@ class MainWindow(QMainWindow):
                        in self.get_all_cells()
                        if cell.mines_around == 0 and not cell.is_mine
                       ]
-        empty_cells[random.randint(0, len(empty_cells)-1)].is_start = True
+        start_cell = empty_cells[random.randint(0, len(empty_cells)-1)]
+        start_cell.is_start = True
 
+        for _, _, cell in self.get_around_cells(start_cell.x, start_cell.y):
+            if not cell.is_mine:
+                cell.click()
+    
+    def expand_reveal(self, x, y):
+        """
+        Раскрытие пустых клеток
+        """
+        for _, _, cell in self.get_revealable_cells(x, y):
+            cell.reveal()
+    
+    def get_revealable_cells(self, x, y):
+        """
+        Получить список клеток что можно раскрыть вокруг (x, y)
+        """
+        for xi, yi, cell in self.get_around_cells(x, y):
+            if not cell.is_mine and not cell.is_flagged and not cell.is_revealed:
+                yield (xi, yi, cell)
 
 if __name__ == '__main__':
     app = QApplication([])
