@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
         w.setLayout(vb)
         self.setCentralWidget(w)
 
-    def init_map(self):
+    def init_map(self): 
         """
         Инициализация игрового поля
         """
