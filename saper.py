@@ -2,6 +2,8 @@
 Игра "Сапер" на PyQt5
 """
 
+from asyncio.proactor_events import _ProactorDuplexPipeTransport
+from xml.etree.ElementPath import get_parent_map
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -32,6 +34,13 @@ STATUS_ICONS = {
     STATUS_SUCCESS: "./images/smiley-lol.png",
 }
 
+NUM_COLORS = [
+Qt.black,
+Qt.green,
+Qt.red,
+Qt.blue,
+Qt.darkRed
+]
 
 class Cell(QWidget):
     """
@@ -90,29 +99,8 @@ class Cell(QWidget):
                 p.drawPixmap(r, QPixmap(IMG_BOMB))
             elif self.is_start:
                 p.drawPixmap(r, QPixmap(IMG_START))
-            elif self.mines_around == 1:
-                pen = QPen(Qt.blue)
-                p.setPen(pen)
-                f = p.font()
-                f.setBold(True)
-                p.setFont(f)
-                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
-            elif self.mines_around == 2:
-                pen = QPen(Qt.green)
-                p.setPen(pen)
-                f = p.font()
-                f.setBold(True)
-                p.setFont(f)
-                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
-            elif self.mines_around == 3:
-                pen = QPen(Qt.red)
-                p.setPen(pen)
-                f = p.font()
-                f.setBold(True)
-                p.setFont(f)
-                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
-            elif self.mines_around >= 4:
-                pen = QPen(Qt.purple)
+            elif self.mines_around > 0:
+                pen = QPen(NUM_COLORS[self.mines_around])
                 p.setPen(pen)
                 f = p.font()
                 f.setBold(True)
