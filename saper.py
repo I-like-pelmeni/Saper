@@ -39,7 +39,10 @@ Qt.black,
 Qt.green,
 Qt.red,
 Qt.blue,
-Qt.darkRed
+Qt.darkRed,
+Qt.darkCyan,
+Qt.magenta,
+Qt.darkMagenta
 ]
 
 class Cell(QWidget):
