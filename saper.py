@@ -90,8 +90,29 @@ class Cell(QWidget):
                 p.drawPixmap(r, QPixmap(IMG_BOMB))
             elif self.is_start:
                 p.drawPixmap(r, QPixmap(IMG_START))
-            elif self.mines_around > 0:
-                pen = QPen(Qt.black)
+            elif self.mines_around == 1:
+                pen = QPen(Qt.blue)
+                p.setPen(pen)
+                f = p.font()
+                f.setBold(True)
+                p.setFont(f)
+                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
+            elif self.mines_around == 2:
+                pen = QPen(Qt.green)
+                p.setPen(pen)
+                f = p.font()
+                f.setBold(True)
+                p.setFont(f)
+                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
+            elif self.mines_around == 3:
+                pen = QPen(Qt.red)
+                p.setPen(pen)
+                f = p.font()
+                f.setBold(True)
+                p.setFont(f)
+                p.drawText(r, Qt.AlignCenter, str(self.mines_around))
+            elif self.mines_around >= 4:
+                pen = QPen(Qt.purple)
                 p.setPen(pen)
                 f = p.font()
                 f.setBold(True)
@@ -147,7 +168,6 @@ class Cell(QWidget):
             else:
                 self.accorded.emit(self.x, self.y)
         self.clicked.emit()
-                
 
 class MainWindow(QMainWindow):
     """
@@ -285,6 +305,7 @@ class MainWindow(QMainWindow):
         cells = [cell for _, _, cell in self.get_around_cells(x, y)]
         return sum(1 if cell.is_mine else 0 for cell in cells)
 
+
     def get_around_cells(self, x, y):
         """
         Получить список клеток вокруг клетки (x, y)
@@ -412,7 +433,7 @@ class MainWindow(QMainWindow):
         """
         Определить, что можно открыть вокруг открытой клетки
         """
-        flagged_count = sum(1 if cell.is_flagged else 0 
+        flagged_count = sum(1 if cell.is_flagged else 0
                             for _, _, cell in self.get_around_cells(x, y))
         cell = self.grid.itemAtPosition(x, y).widget()
         if flagged_count == cell.mines_around:
